@@ -240,9 +240,6 @@ github.com/stretchr/testify/mock
 # github.com/x448/float16 v0.8.4
 ## explicit; go 1.11
 github.com/x448/float16
-# go.etcd.io/etcd v3.3.27+incompatible
-## explicit
-go.etcd.io/etcd/etcdserver/api/v3rpc/rpctypes
 # go.etcd.io/etcd/api/v3 v3.5.19
 ## explicit; go 1.23.0
 go.etcd.io/etcd/api/v3/authpb
