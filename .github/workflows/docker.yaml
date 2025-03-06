@@ -85,7 +85,10 @@ jobs:
             kubectl apply -f $i
           done
 
-          export KUBERUN="kubectl run --quiet -i -t stolonctl --image=stolon:master-pg11 --restart=Never --rm --"
+          kubectl get all
+
+          set -x
+          export KUBERUN="kubectl run --quiet -i -t stolonctl --image=$IMAGE --restart=Never --rm --"
           $KUBERUN /usr/local/bin/stolonctl --cluster-name=kube-stolon --store-backend=kubernetes --kube-resource-kind=configmap init -y
 
           OK=false
