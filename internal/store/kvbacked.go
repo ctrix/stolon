@@ -19,18 +19,17 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"net/url"
-	"path/filepath"
-	"regexp"
-	"strings"
-	"time"
-
 	"github.com/docker/leadership"
 	"github.com/docker/libkv"
 	libkvstore "github.com/docker/libkv/store"
 	"github.com/sorintlab/stolon/internal/cluster"
 	"github.com/sorintlab/stolon/internal/common"
 	etcdclientv3 "go.etcd.io/etcd/clientv3"
+	"net/url"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"time"
 )
 
 // Backend represents a KV Store Backend
