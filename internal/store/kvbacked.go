@@ -19,17 +19,21 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/docker/leadership"
-	"github.com/docker/libkv"
-	libkvstore "github.com/docker/libkv/store"
-	"github.com/sorintlab/stolon/internal/cluster"
-	"github.com/sorintlab/stolon/internal/common"
-	etcdclientv3 "go.etcd.io/etcd/client/v3"
 	"net/url"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/sorintlab/stolon/internal/leadership"
+
+	"github.com/kvtools/consul"
+	etcdv2 "github.com/kvtools/etcdv2"
+	etcdv3 "github.com/kvtools/etcdv3"
+	"github.com/kvtools/valkeyrie"
+
+	"github.com/sorintlab/stolon/internal/cluster"
+	"github.com/sorintlab/stolon/internal/common"
 )
 
 // Backend represents a KV Store Backend
@@ -104,17 +108,6 @@ type KVStore interface {
 }
 
 func NewKVStore(cfg Config) (KVStore, error) {
-	var kvBackend libkvstore.Backend
-	switch cfg.Backend {
-	case CONSUL:
-		kvBackend = libkvstore.CONSUL
-	case ETCDV2:
-		kvBackend = libkvstore.ETCD
-	case ETCDV3:
-	default:
-		return nil, fmt.Errorf("Unknown store backend: %q", cfg.Backend)
-	}
-
 	endpointsStr := cfg.Endpoints
 	if endpointsStr == "" {
 		switch cfg.Backend {
@@ -168,32 +161,42 @@ func NewKVStore(cfg Config) (KVStore, error) {
 		}
 	}
 
+	ctx := context.Background()
+
 	switch cfg.Backend {
-	case CONSUL, ETCDV2:
-		config := &libkvstore.Config{
+	case CONSUL:
+		config := &consul.Config{
 			TLS:               tlsConfig,
 			ConnectionTimeout: cfg.Timeout,
 		}
 
-		store, err := libkv.NewStore(kvBackend, addrs, config)
+		store, err := valkeyrie.NewStore(ctx, "stolon", addrs, config)
 		if err != nil {
 			return nil, err
 		}
-		return &libKVStore{store: store}, nil
-	case ETCDV3:
-		config := etcdclientv3.Config{
-			Endpoints:            addrs,
-			TLS:                  tlsConfig,
-			DialTimeout:          20 * time.Second,
-			DialKeepAliveTime:    1 * time.Second,
-			DialKeepAliveTimeout: cfg.Timeout,
+		return &libKVStore{store: store, ctx: ctx}, nil
+	case ETCDV2:
+		config := &etcdv2.Config{
+			TLS:               tlsConfig,
+			ConnectionTimeout: cfg.Timeout,
 		}
 
-		c, err := etcdclientv3.New(config)
+		store, err := valkeyrie.NewStore(ctx, "stolon", addrs, config)
 		if err != nil {
 			return nil, err
 		}
-		return &etcdV3Store{c: c, requestTimeout: cfg.Timeout}, nil
+		return &libKVStore{store: store, ctx: ctx}, nil
+	case ETCDV3:
+		config := &etcdv3.Config{
+			TLS:               tlsConfig,
+			ConnectionTimeout: cfg.Timeout,
+		}
+
+		store, err := valkeyrie.NewStore(ctx, "stolon", addrs, config)
+		if err != nil {
+			return nil, err
+		}
+		return &libKVStore{store: store, ctx: ctx}, nil
 	default:
 		return nil, fmt.Errorf("Unknown store backend: %q", cfg.Backend)
 	}
