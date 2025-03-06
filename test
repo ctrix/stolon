@@ -63,7 +63,7 @@ if [ -n "${vetRes}" ]; then
 fi
 
 echo "Checking govet -shadow ..."
-go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
+go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
 export PATH="$(go env GOPATH)/bin":${PATH}
 shadow_tool=$(which shadow)
 vetRes=$(${shadow_tool} ${PACKAGES})
@@ -83,8 +83,8 @@ fi
 
 
 echo "Checking with golangci-lint"
-curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b ${BINDIR} v1.23.6
-${BINDIR}/golangci-lint run --deadline 5m
+curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b ${BINDIR} v1.64.6
+${BINDIR}/golangci-lint run --timeout 5m0s
 
 echo "Running tests"
 go test -timeout 3m ${COVER} $@ ${PACKAGES} ${RACE}
