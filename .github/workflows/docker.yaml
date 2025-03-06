@@ -49,6 +49,7 @@ jobs:
 #          tags: ${{ steps.meta.outputs.tags }}
 #          labels: ${{ steps.meta.outputs.labels }}
 #          build-args: PGVERSION=${{ env.PGVERSION }}
+
       - name: Save Vars
         id: save-output
         run: |
@@ -74,7 +75,9 @@ jobs:
           sudo apt-get -y install gettext-base jq sed
 
           export IMAGE=${{ env.IMG }}:${{ env.TAG }}
-          echo $IMAGE
+          echo "Image is: $IMAGE"
+
+          ls -la
 
           for i in `ls -1 .github/manifests/*.yaml` ; do
             sed -i 's#DOCKERIMAGE#$MAGE#' $i
