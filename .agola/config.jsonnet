@@ -120,6 +120,10 @@ local task_build_push_images(name, pgversions, istag, push) =
     depends: ['checkout code and save to workspace', 'integration tests store: etcdv3, postgres: 11, arch: amd64'],
   };
 
+
+
+
+
 {
   runs: [
     {

@@ -126,7 +126,7 @@ func (c *Candidate) campaign() {
 			return
 		}
 
-		lostCh, err := lock.Lock(nil)
+		lostCh, err := lock.Lock(c.ctx)
 		if err != nil {
 			c.errCh <- err
 			return
@@ -139,11 +139,11 @@ func (c *Candidate) campaign() {
 		case <-c.resignCh:
 			// We were asked to resign, give up the lock and go back
 			// campaigning.
-			lock.Unlock(c.ctx)
+			_ = lock.Unlock(c.ctx)
 		case <-c.stopCh:
 			// Give up the leadership and quit.
 			if c.leader {
-				lock.Unlock(c.ctx)
+				_ = lock.Unlock(c.ctx)
 			}
 			return
 		case <-lostCh:
