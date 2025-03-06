@@ -1,9 +1,11 @@
-ARG PGVERSION
+ARG PGVERSION=0
 
 #######
 ####### Build the stolon binaries
 #######
 FROM golang:1.24-bookworm AS builder
+
+WORKDIR /stolon
 
 # copy all the sources
 COPY . .
@@ -13,7 +15,7 @@ RUN make
 #######
 ####### Build the final image
 #######
-FROM postgres:$PGVERSION
+FROM postgres:${PGVERSION}
 
 RUN useradd -ms /bin/bash stolon
 
