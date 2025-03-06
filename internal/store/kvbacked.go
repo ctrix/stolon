@@ -24,7 +24,7 @@ import (
 	libkvstore "github.com/docker/libkv/store"
 	"github.com/sorintlab/stolon/internal/cluster"
 	"github.com/sorintlab/stolon/internal/common"
-	etcdclientv3 "go.etcd.io/etcd/clientv3"
+	etcdclientv3 "go.etcd.io/etcd/client/v3"
 	"net/url"
 	"path/filepath"
 	"regexp"
