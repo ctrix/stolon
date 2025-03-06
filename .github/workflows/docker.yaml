@@ -69,6 +69,9 @@ jobs:
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1
 
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Run tests
         shell: bash
         run: |
