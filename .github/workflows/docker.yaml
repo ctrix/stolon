@@ -85,9 +85,6 @@ jobs:
             kubectl apply -f $i
           done
 
-          kubectl get all
-
-          set -x
           export KUBERUN="kubectl run --quiet -i -t stolonctl --image=$IMAGE --restart=Never --rm --"
           $KUBERUN /usr/local/bin/stolonctl --cluster-name=kube-stolon --store-backend=kubernetes --kube-resource-kind=configmap init -y
 
@@ -109,8 +106,13 @@ jobs:
           $KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap clusterdata read | jq .
 
           if [ "$OK" != "true" ]; then
-            echo "stolon cluster not correctly setup"
+            echo "================================== !!"
+            echo "stolon cluster NOT correctly setup !!"
+            echo "================================== !!"
             exit 1
+          else
+            echo "================================="
+            echo "stolon cluster successfully setup"
+            echo "================================="
           fi
 
-          echo "stolon cluster successfully setup"
