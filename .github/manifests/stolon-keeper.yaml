@@ -1,6 +1,3 @@
-# PetSet was renamed to StatefulSet in k8s 1.5
-# apiVersion: apps/v1alpha1
-# kind: PetSet
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -25,7 +22,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: stolon-keeper
-          image: sorintlab/stolon:master-pg10
+          image: DOCKERIMAGE
           command:
             - "/bin/bash"
             - "-ec"

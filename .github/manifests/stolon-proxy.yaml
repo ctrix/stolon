@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: stolon-proxy
-          image: sorintlab/stolon:master-pg10
+          image: DOCKERIMAGE
           command:
             - "/bin/bash"
             - "-ec"
