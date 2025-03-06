@@ -102,11 +102,6 @@ jobs:
               sleep 1
           done
 
-          # report some debug output
-          kubectl get all
-          $KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap status
-          $KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap clusterdata read | jq .
-
           if [ "$OK" != "true" ]; then
             echo "================================== !!"
             echo "stolon cluster NOT correctly setup !!"
@@ -117,4 +112,11 @@ jobs:
             echo "stolon cluster successfully setup"
             echo "================================="
           fi
+
+          # report some debug output
+          kubectl get all
+
+          $KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap clusterdata read | jq .
+          $KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap status
+          $KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap clusterdata read | jq .
 
