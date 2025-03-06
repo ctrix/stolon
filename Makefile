@@ -5,12 +5,9 @@ $(shell cd $(PROJDIR))
 
 REPO_PATH=github.com/sorintlab/stolon
 
-VERSION ?= $(shell scripts/git-version.sh)
-
-LD_FLAGS="-w -X $(REPO_PATH)/cmd.Version=$(VERSION)"
+LD_FLAGS="-s -w"
 
 $(shell mkdir -p bin )
-
 
 .PHONY: all
 all: build
