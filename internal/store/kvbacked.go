@@ -350,21 +350,12 @@ func (s *KVBackedStore) GetProxiesInfo(ctx context.Context) (cluster.ProxiesInfo
 	return psi, nil
 }
 
-func NewKVBackedElection(kvStore KVStore, path, candidateUID string, timeout time.Duration) Election {
+func NewKVBackedElection(kvStore KVStore, path, candidateUID string, _ time.Duration) Election {
 	switch kvStore := kvStore.(type) {
 	case *libKVStore:
 		s := kvStore
 		candidate := leadership.NewCandidate(s.store, path, candidateUID, MinTTL)
 		return &libkvElection{store: s, path: path, candidate: candidate}
-	case *etcdV3Store:
-		etcdV3Store := kvStore
-		return &etcdv3Election{
-			c:              etcdV3Store.c,
-			path:           path,
-			candidateUID:   candidateUID,
-			ttl:            MinTTL,
-			requestTimeout: timeout,
-		}
 	default:
 		panic("unknown kvstore")
 	}
