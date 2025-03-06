@@ -49,11 +49,11 @@ var CmdProxy = &cobra.Command{
 type config struct {
 	cmd.CommonConfig
 
-	listenAddress string
-	port          string
+	listenAddress    string
+	port             string
 	exitOnStoreError bool
-	stopListening bool
-	debug         bool
+	stopListening    bool
+	debug            bool
 
 	keepAliveIdle     int
 	keepAliveCount    int
@@ -85,7 +85,7 @@ type ClusterChecker struct {
 	port          string
 
 	exitOnStoreError bool
-	stopListening bool
+	stopListening    bool
 
 	listener         *net.TCPListener
 	pp               *pollon.Proxy
