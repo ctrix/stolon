@@ -14,7 +14,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  PGVERSION:16
+  PGVERSION: 16
 
 jobs:
   docker:
