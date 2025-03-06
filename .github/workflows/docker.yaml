@@ -85,8 +85,6 @@ jobs:
             kubectl apply -f $i
           done
 
-          set -x
-
           export KUBERUN="kubectl run --quiet -i -t stolonctl --image=$IMAGE --restart=Never --rm --"
           $KUBERUN /usr/local/bin/stolonctl --cluster-name=kube-stolon --store-backend=kubernetes --kube-resource-kind=configmap init -y
 
@@ -116,7 +114,6 @@ jobs:
           # report some debug output
           kubectl get all
 
+          set -x
           $KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap clusterdata read | jq .
-          $KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap status
-          $KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap clusterdata read | jq .
-
+          #$KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap status
