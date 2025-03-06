@@ -77,7 +77,7 @@ jobs:
         run: |
           sudo apt-get -y install gettext-base jq sed
 
-          export IMAGE=${{ env.IMG }}:${{ env.TAG }}
+          export IMAGE=${{ env.TAG }}
           echo "Image is: $IMAGE"
 
           for i in `ls -1 .github/manifests/*.yaml` ; do
