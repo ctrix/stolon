@@ -93,6 +93,8 @@ jobs:
           export STOLONPARAMS="--cluster-name=kube-stolon --store-backend=kubernetes --kube-namespace stolon --kube-resource-kind configmap"
           $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS init -y
 
+          set -x
+
           OK=false
           COUNT=0
           while [ $COUNT -lt 120 ]; do
