@@ -370,7 +370,7 @@ func NewKubeElection(kubecli *kubernetes.Clientset, podName, namespace, clusterN
 	resourceName := fmt.Sprintf("%s-%s", util.KubeResourcePrefix, clusterName)
 
 	rl, err := resourcelock.New(
-		resourcelock.LeasesResourceLock,
+		resourcelock.ConfigMapsLeasesResourceLock,
 		namespace,
 		resourceName,
 		kubecli.CoreV1(),
