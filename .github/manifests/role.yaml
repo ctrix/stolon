@@ -9,8 +9,8 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: default
-  namespace: default
+  name: stolon
+  namespace: stolon
 rules:
 - apiGroups:
   - ""
