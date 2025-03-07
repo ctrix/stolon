@@ -20,6 +20,7 @@ spec:
       containers:
         - name: stolon-sentinel
           image: DOCKERIMAGE
+          imagePullPolicy: Always
           command:
             - "/bin/bash"
             - "-ec"

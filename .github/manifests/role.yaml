@@ -10,13 +10,15 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: stolon
-  namespace: default
+  namespace: stolon
 rules:
 - apiGroups:
   - ""
+  - "coordination.k8s.io"
   resources:
   - pods
   - configmaps
   - events
+  - leases
   verbs:
   - "*"
