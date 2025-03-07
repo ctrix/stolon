@@ -370,11 +370,11 @@ func NewKubeElection(kubecli *kubernetes.Clientset, podName, namespace, clusterN
 	resourceName := fmt.Sprintf("%s-%s", util.KubeResourcePrefix, clusterName)
 
 	rl, err := resourcelock.New(
-		resourcelock.ConfigMapsLeasesResourceLock,
+		resourcelock.LeasesResourceLock,
 		namespace,
 		resourceName,
 		kubecli.CoreV1(),
-		nil,
+		kubecli.CoordinationV1(),
 		resourcelock.ResourceLockConfig{
 			Identity:      candidateUID,
 			EventRecorder: createRecorder(kubecli, "stolon-sentinel", namespace),
