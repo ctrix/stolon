@@ -369,7 +369,8 @@ type KubeElection struct {
 func NewKubeElection(kubecli *kubernetes.Clientset, podName, namespace, clusterName, candidateUID string) (*KubeElection, error) {
 	resourceName := fmt.Sprintf("%s-%s", util.KubeResourcePrefix, clusterName)
 
-	rl, err := resourcelock.New("configmaps",
+	rl, err := resourcelock.New(
+		resourcelock.LeasesResourceLock,
 		namespace,
 		resourceName,
 		kubecli.CoreV1(),
