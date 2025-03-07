@@ -100,7 +100,6 @@ jobs:
           export KUBERUN="kubectl run --quiet -it stolonctl -n stolon --image=$DOCKERIMAGE --restart=Never --rm --"
           export STOLONPARAMS="--cluster-name=kube-stolon --store-backend=kubernetes --kube-namespace stolon --kube-resource-kind configmap"
 
-          set -x
           $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS init -y
 
           OK=false
