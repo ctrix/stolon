@@ -40,21 +40,22 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-#      - name: Build and push Docker image
-#        uses: docker/build-push-action@v6
-#        with:
-#          context: .
-#          file: .github/Dockerfile
-#          push: ${{ github.event_name != 'pull_request' }}
-#          tags: ${{ steps.meta.outputs.tags }}
-#          labels: ${{ steps.meta.outputs.labels }}
-#          build-args: PGVERSION=${{ env.PGVERSION }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .github/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: PGVERSION=${{ env.PGVERSION }}
 
       - name: Save Vars
         id: save-output
         run: |
           echo "IMG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" >> $GITHUB_OUTPUT
           echo "TAG=${{ steps.meta.outputs.tags }}"            >> $GITHUB_OUTPUT
+
     outputs:
       img-name: ${{ steps.save-output.outputs.IMG }}
       img-tag:  ${{ steps.save-output.outputs.TAG }}
@@ -81,11 +82,11 @@ jobs:
           echo "Image is: $IMAGE"
 
           for i in `ls -1 .github/manifests/*.yaml` ; do
-            sed -i 's#DOCKERIMAGE#$MAGE#' $i
+            sed -i 's#DOCKERIMAGE#$IMAGE#' $i
             kubectl apply -f $i
           done
 
-          export KUBERUN="kubectl run --quiet -i -t stolonctl --image=$IMAGE --restart=Never --rm --"
+          export KUBERUN="kubectl run --quiet -it stolonctl --image=$IMAGE --restart=Never --rm --"
           $KUBERUN /usr/local/bin/stolonctl --cluster-name=kube-stolon --store-backend=kubernetes --kube-resource-kind=configmap init -y
 
           OK=false
