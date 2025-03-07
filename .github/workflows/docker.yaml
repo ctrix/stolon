@@ -82,7 +82,6 @@ jobs:
           echo "Image is: $IMAGE"
 
           kubectl create ns stolon
-          kubectl ns stolon
 
           for i in `ls -1 .github/manifests/*.yaml` ; do
             sed -i 's#DOCKERIMAGE#$IMAGE#' $i
