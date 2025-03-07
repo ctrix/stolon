@@ -79,7 +79,7 @@ jobs:
           sudo apt-get -y install gettext-base jq sed
 
           export DOCKERIMAGE=${{ env.TAG }}
-          echo "Image is: $IMAGE"
+          echo "Image is: $DOCKERIMAGE"
 
           kubectl get nodes -o wide
           kubectl create ns stolon
@@ -97,7 +97,7 @@ jobs:
             kubectl apply -f ${tmp_file}
           done
 
-          export KUBERUN="kubectl run --quiet -it stolonctl -n stolon --image=$IMAGE --restart=Never --rm --"
+          export KUBERUN="kubectl run --quiet -it stolonctl -n stolon --image=$DOCKERIMAGE --restart=Never --rm --"
           export STOLONPARAMS="--cluster-name=kube-stolon --store-backend=kubernetes --kube-namespace stolon --kube-resource-kind configmap"
 
           set -x
