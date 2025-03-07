@@ -86,7 +86,7 @@ jobs:
           kubectl config set-context --current --namespace=stolon
 
           # Only replace variables that we have in our current environment
-          keys=$(env | cut -d '=' -f 1 | sed 's/.*/$$&/'); joined_keys=$(echo "$keys" | tr '\n' ','); joined_keys=${joined_keys%,};
+          keys=$(env | cut -d '=' -f 1 | sed 's/.*/$&/'); joined_keys=$(echo "$keys" | tr '\n' ','); joined_keys=${joined_keys%,};
           ENVSUBST_ONLY="'$joined_keys'"
 
           echo "Replacing vars: ${ENVSUBST_ONLY}"
