@@ -82,13 +82,14 @@ jobs:
           echo "Image is: $IMAGE"
 
           kubectl create ns stolon
+          kubectl config set-context --current --namespace=stolon
 
           for i in `ls -1 .github/manifests/*.yaml` ; do
             sed -i 's#DOCKERIMAGE#$IMAGE#' $i
             kubectl apply -f $i
           done
 
-          export KUBERUN="kubectl run --quiet -it stolonctl --image=$IMAGE --restart=Never --rm --"
+          export KUBERUN="kubectl run --quiet -it stolonctl -n stolon --image=$IMAGE --restart=Never --rm --"
           export STOLONPARAMS="--cluster-name=kube-stolon --store-backend=kubernetes --kube-namespace stolon --kube-resource-kind configmap"
           $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS init -y
 
