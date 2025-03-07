@@ -78,16 +78,23 @@ jobs:
         run: |
           sudo apt-get -y install gettext-base jq sed
 
-          export IMAGE=${{ env.TAG }}
+          export DOCKERIMAGE=${{ env.TAG }}
           echo "Image is: $IMAGE"
 
           kubectl get nodes -o wide
           kubectl create ns stolon
           kubectl config set-context --current --namespace=stolon
 
+          # Only replace variables that we have in our current environment
+          keys=$(env | cut -d '=' -f 1 | sed 's/.*/$$&/'); joined_keys=$(echo "$keys" | tr '\n' ','); joined_keys=${joined_keys%,};
+          ENVSUBST_ONLY="'$joined_keys'"
+
+          echo "Replacing vars: ${ENVSUBST_ONLY}"
+
           for i in `ls -1 .github/manifests/*.yaml` ; do
-            sed -i 's#DOCKERIMAGE#$IMAGE#' $i
-            kubectl apply -f $i
+            tmp_file=$(mktemp /tmp/tmpfile.XXXXXX);
+            envsubst "${ENVSUBST_ONLY}" < "$i" > "${tmp_file}";
+            kubectl apply -f ${tmp_file}
           done
 
           export KUBERUN="kubectl run --quiet -it stolonctl -n stolon --image=$IMAGE --restart=Never --rm --"

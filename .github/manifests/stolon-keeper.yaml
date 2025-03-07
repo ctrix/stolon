@@ -22,7 +22,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: stolon-keeper
-          image: DOCKERIMAGE
+          image: ${DOCKERIMAGE}
           imagePullPolicy: Always
           command:
             - "/bin/bash"
