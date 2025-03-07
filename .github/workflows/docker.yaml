@@ -81,6 +81,7 @@ jobs:
           export IMAGE=${{ env.TAG }}
           echo "Image is: $IMAGE"
 
+          kubectl get nodes -o wide
           kubectl create ns stolon
           kubectl config set-context --current --namespace=stolon
 
@@ -91,13 +92,13 @@ jobs:
 
           export KUBERUN="kubectl run --quiet -it stolonctl -n stolon --image=$IMAGE --restart=Never --rm --"
           export STOLONPARAMS="--cluster-name=kube-stolon --store-backend=kubernetes --kube-namespace stolon --kube-resource-kind configmap"
-          $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS init -y
 
           set -x
+          $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS init -y
 
           OK=false
           COUNT=0
-          while [ $COUNT -lt 120 ]; do
+          while [ $COUNT -lt 60 ]; do
               OUT=$($KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq .cluster.status.phase)
               if [ "$OUT" == '"normal"' ]; then
                   OK=true
@@ -111,15 +112,17 @@ jobs:
             echo "================================== !!"
             echo "stolon cluster NOT correctly setup !!"
             echo "================================== !!"
-            exit 1
+
+            # report some debug output
+            kubectl get all -n stolon
+
+            $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS status
+            $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq .
           else
             echo "================================="
             echo "stolon cluster successfully setup"
             echo "================================="
+
+            $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS status
           fi
 
-          # report some debug output
-          kubectl get all
-
-          $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS status
-          $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq .
