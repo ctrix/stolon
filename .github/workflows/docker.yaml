@@ -14,7 +14,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  PGVERSION: 16
+  PGVERSION: 17
 
 jobs:
   docker:
@@ -89,12 +89,13 @@ jobs:
           done
 
           export KUBERUN="kubectl run --quiet -it stolonctl --image=$IMAGE --restart=Never --rm --"
-          $KUBERUN /usr/local/bin/stolonctl --cluster-name=kube-stolon --store-backend=kubernetes --kube-resource-kind=configmap init -y
+          export STOLONPARAMS="--cluster-name=kube-stolon --store-backend=kubernetes --kube-namespace stolon --kube-resource-kind configmap"
+          $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS init -y
 
           OK=false
           COUNT=0
           while [ $COUNT -lt 120 ]; do
-              OUT=$($KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap clusterdata read | jq .cluster.status.phase)
+              OUT=$($KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq .cluster.status.phase)
               if [ "$OUT" == '"normal"' ]; then
                   OK=true
                   break
@@ -117,6 +118,5 @@ jobs:
           # report some debug output
           kubectl get all
 
-          set -x
-          $KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap clusterdata read | jq .
-          #$KUBERUN /usr/local/bin/stolonctl --cluster-name kube-stolon --store-backend kubernetes --kube-resource-kind configmap status
+          $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS status
+          $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq .
