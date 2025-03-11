@@ -466,6 +466,7 @@ K:
 		}
 		freeKeepers = append(freeKeepers, keeper)
 	}
+
 	return freeKeepers
 }
 
@@ -478,11 +479,14 @@ const (
 	// better differentiate with with master and standby db roles.
 	dbTypeMaster dbType = iota
 	dbTypeStandby
-
+)
+const (
 	dbValidityValid dbValidity = iota
 	dbValidityInvalid
 	dbValidityUnknown
+)
 
+const (
 	dbStatusGood dbStatus = iota
 	dbStatusFailed
 	dbStatusConverging
@@ -633,6 +637,8 @@ func (s *Sentinel) dbStatus(cd *cluster.ClusterData, dbUID string) dbStatus {
 	// if converging then it's not failed (it can also be not healthy since it could be resyncing)
 	case Converging:
 		return dbStatusConverging
+	case Converged:
+		// Nothing to do here
 	}
 	// if converged but not healthy mark as failed
 	if !db.Status.Healthy {
@@ -1630,7 +1636,7 @@ func (s *Sentinel) isDBHealthy(cd *cluster.ClusterData, db *cluster.DB) bool {
 	return true
 }
 
-func (s *Sentinel) isDBIncreasingXLogPos(cd *cluster.ClusterData, db *cluster.DB) bool {
+func (s *Sentinel) isDBIncreasingXLogPos(_ *cluster.ClusterData, db *cluster.DB) bool {
 	t, ok := s.dbNotIncreasingXLogPos[db.UID]
 	if !ok {
 		return true
@@ -1967,7 +1973,7 @@ func Execute() {
 	}
 }
 
-func sentinel(c *cobra.Command, args []string) {
+func sentinel(c *cobra.Command, _ []string) {
 	switch cfg.LogLevel {
 	case "error":
 		slog.SetLevel(zap.ErrorLevel)
