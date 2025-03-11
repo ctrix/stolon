@@ -150,6 +150,7 @@ jobs:
         run: |
           sudo apt-get -y install gettext-base jq sed
 
+          export DEBIAN_FRONTEND=noninteractive
           export DOCKERIMAGE=${{ env.TAG }}
           echo "Image is: $DOCKERIMAGE"
 
