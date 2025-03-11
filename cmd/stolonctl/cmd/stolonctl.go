@@ -69,7 +69,7 @@ func init() {
 	CmdStolonCtl.AddCommand(cmdVersion)
 }
 
-func versionCommand(c *cobra.Command, args []string) {
+func versionCommand(_ *cobra.Command, _ []string) {
 	stdout("stolonctl version %s", cmd.Version)
 }
 
