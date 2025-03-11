@@ -172,10 +172,10 @@ jobs:
           export KUBERUN="kubectl run --quiet -it stolonctl -n stolon --image=$DOCKERIMAGE --restart=Never --rm --"
           export STOLONPARAMS="--cluster-name=kube-stolon --store-backend=consul --kube-namespace stolon"
 
-	  # Wait for consul to be ready
-	  $KUBERUN bash -c "apt-get update && apt-get install netcat-traditional && while ! nc -z consul-server.stolon.svc 8500; do sleep 1; done"
+          # Wait for consul to be ready
+          $KUBERUN bash -c "apt-get update && apt-get install netcat-traditional && while ! nc -z consul-server.stolon.svc 8500; do sleep 1; done"
 
-	  # initialize consul
+          # initialize consul
           $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS init -y
 
           OK=false
