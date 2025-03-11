@@ -36,7 +36,6 @@ import (
 	slog "github.com/sorintlab/stolon/internal/log"
 	pg "github.com/sorintlab/stolon/internal/postgresql"
 	"github.com/sorintlab/stolon/internal/store"
-	"github.com/sorintlab/stolon/internal/timer"
 	"github.com/sorintlab/stolon/internal/util"
 
 	"github.com/davecgh/go-spew/spew"
@@ -140,7 +139,7 @@ func (s *Sentinel) setSentinelInfo(ctx context.Context, ttl time.Duration) error
 
 func (s *Sentinel) SetKeeperError(uid string) {
 	if _, ok := s.keeperErrorTimers[uid]; !ok {
-		s.keeperErrorTimers[uid] = timer.Now()
+		s.keeperErrorTimers[uid] = time.Now()
 	}
 }
 
@@ -150,7 +149,7 @@ func (s *Sentinel) CleanKeeperError(uid string) {
 
 func (s *Sentinel) SetDBError(uid string) {
 	if _, ok := s.dbErrorTimers[uid]; !ok {
-		s.dbErrorTimers[uid] = timer.Now()
+		s.dbErrorTimers[uid] = time.Now()
 	}
 }
 
@@ -202,16 +201,16 @@ func (s *Sentinel) updateKeepersStatus(cd *cluster.ClusterData, keepersInfo clus
 				if !kih.Seen {
 					//Remove since it was already there and wasn't updated
 					delete(tmpKeepersInfo, ki.UID)
-				} else if kih.Seen && timer.Since(kih.Timer) > s.sleepInterval {
+				} else if kih.Seen && time.Since(kih.Timer) > s.sleepInterval {
 					//Remove since it wasn't updated
 					delete(tmpKeepersInfo, ki.UID)
 				}
 			}
 			if kih.KeeperInfo.InfoUID != ki.InfoUID {
-				kihs[keeperUID] = &KeeperInfoHistory{KeeperInfo: ki, Seen: true, Timer: timer.Now()}
+				kihs[keeperUID] = &KeeperInfoHistory{KeeperInfo: ki, Seen: true, Timer: time.Now()}
 			}
 		} else {
-			kihs[keeperUID] = &KeeperInfoHistory{KeeperInfo: ki, Seen: true, Timer: timer.Now()}
+			kihs[keeperUID] = &KeeperInfoHistory{KeeperInfo: ki, Seen: true, Timer: time.Now()}
 		}
 	}
 	keepersInfo = tmpKeepersInfo
@@ -351,15 +350,15 @@ func (s *Sentinel) activeProxiesInfos(proxiesInfo cluster.ProxiesInfo) cluster.P
 	for _, pi := range proxiesInfo {
 		if pih, ok := pihs[pi.UID]; ok {
 			if pih.ProxyInfo.InfoUID == pi.InfoUID {
-				if timer.Since(pih.Timer) > 2*pi.ProxyTimeout {
+				if time.Since(pih.Timer) > 2*pi.ProxyTimeout {
 					delete(activeProxiesInfo, pi.UID)
 				}
 			} else {
-				pihs[pi.UID] = &ProxyInfoHistory{ProxyInfo: pi, Timer: timer.Now()}
+				pihs[pi.UID] = &ProxyInfoHistory{ProxyInfo: pi, Timer: time.Now()}
 			}
 		} else {
 			// add proxyInfo if not in the history
-			pihs[pi.UID] = &ProxyInfoHistory{ProxyInfo: pi, Timer: timer.Now()}
+			pihs[pi.UID] = &ProxyInfoHistory{ProxyInfo: pi, Timer: time.Now()}
 		}
 	}
 
@@ -1614,7 +1613,7 @@ func (s *Sentinel) isKeeperHealthy(cd *cluster.ClusterData, keeper *cluster.Keep
 	if !ok {
 		return true
 	}
-	if timer.Since(t) > cd.Cluster.DefSpec().FailInterval.Duration {
+	if time.Since(t) > cd.Cluster.DefSpec().FailInterval.Duration {
 		return false
 	}
 	return true
@@ -1625,7 +1624,7 @@ func (s *Sentinel) isDBHealthy(cd *cluster.ClusterData, db *cluster.DB) bool {
 	if !ok {
 		return true
 	}
-	if timer.Since(t) > cd.Cluster.DefSpec().FailInterval.Duration {
+	if time.Since(t) > cd.Cluster.DefSpec().FailInterval.Duration {
 		return false
 	}
 	return true
@@ -1648,7 +1647,7 @@ func (s *Sentinel) updateDBConvergenceInfos(cd *cluster.ClusterData) {
 			delete(s.dbConvergenceInfos, db.UID)
 			continue
 		}
-		nd := &DBConvergenceInfo{Generation: db.Generation, Timer: timer.Now()}
+		nd := &DBConvergenceInfo{Generation: db.Generation, Timer: time.Now()}
 		d, ok := s.dbConvergenceInfos[db.UID]
 		if !ok {
 			s.dbConvergenceInfos[db.UID] = nd
@@ -1667,7 +1666,7 @@ func (s *Sentinel) dbConvergenceState(db *cluster.DB, timeout time.Duration) Con
 		if !ok {
 			panic(fmt.Errorf("no db convergence info for db %q, this shouldn't happen!", db.UID))
 		}
-		if timer.Since(d.Timer) > timeout {
+		if time.Since(d.Timer) > timeout {
 			return ConvergenceFailed
 		}
 	}
@@ -1677,7 +1676,7 @@ func (s *Sentinel) dbConvergenceState(db *cluster.DB, timeout time.Duration) Con
 type KeeperInfoHistory struct {
 	KeeperInfo *cluster.KeeperInfo
 	Seen       bool
-	Timer      int64
+	Timer      time.Time
 }
 
 type KeeperInfoHistories map[string]*KeeperInfoHistory
@@ -1698,12 +1697,12 @@ func (k KeeperInfoHistories) DeepCopy() KeeperInfoHistories {
 
 type DBConvergenceInfo struct {
 	Generation int64
-	Timer      int64
+	Timer      time.Time
 }
 
 type ProxyInfoHistory struct {
 	ProxyInfo *cluster.ProxyInfo
-	Timer     int64
+	Timer     time.Time
 }
 
 type ProxyInfoHistories map[string]*ProxyInfoHistory
@@ -1748,8 +1747,8 @@ type Sentinel struct {
 	// Make RandFn settable to ease testing with reproducible "random" numbers
 	RandFn func(int) int
 
-	keeperErrorTimers      map[string]int64
-	dbErrorTimers          map[string]int64
+	keeperErrorTimers      map[string]time.Time
+	dbErrorTimers          map[string]time.Time
 	dbNotIncreasingXLogPos map[string]int64
 	dbConvergenceInfos     map[string]*DBConvergenceInfo
 
@@ -1908,8 +1907,8 @@ func (s *Sentinel) clusterSentinelCheck(pctx context.Context) {
 	// if this is the first check after (re)gaining leadership reset all
 	// the internal timers
 	if firstRun {
-		s.keeperErrorTimers = make(map[string]int64)
-		s.dbErrorTimers = make(map[string]int64)
+		s.keeperErrorTimers = make(map[string]time.Time)
+		s.dbErrorTimers = make(map[string]time.Time)
 		s.dbNotIncreasingXLogPos = make(map[string]int64)
 		s.keeperInfoHistories = make(KeeperInfoHistories)
 		s.dbConvergenceInfos = make(map[string]*DBConvergenceInfo)
