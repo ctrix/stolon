@@ -27,7 +27,7 @@ import (
 
 	"github.com/sorintlab/stolon/internal/leadership"
 
-	"github.com/kvtools/consul"
+	consul "github.com/kvtools/consul"
 	etcdv2 "github.com/kvtools/etcdv2"
 	etcdv3 "github.com/kvtools/etcdv3"
 	"github.com/kvtools/valkeyrie"
@@ -115,6 +115,8 @@ func NewKVStore(cfg Config) (KVStore, error) {
 			endpointsStr = DefaultConsulEndpoints
 		case ETCDV2, ETCDV3:
 			endpointsStr = DefaultEtcdEndpoints
+		default:
+			return nil, fmt.Errorf("Unknown store backend: %q", cfg.Backend)
 		}
 	}
 	endpoints := strings.Split(endpointsStr, ",")
@@ -170,7 +172,7 @@ func NewKVStore(cfg Config) (KVStore, error) {
 			ConnectionTimeout: cfg.Timeout,
 		}
 
-		store, err := valkeyrie.NewStore(ctx, "stolon", addrs, config)
+		store, err := valkeyrie.NewStore(ctx, consul.StoreName, addrs, config)
 		if err != nil {
 			return nil, err
 		}
@@ -181,7 +183,7 @@ func NewKVStore(cfg Config) (KVStore, error) {
 			ConnectionTimeout: cfg.Timeout,
 		}
 
-		store, err := valkeyrie.NewStore(ctx, "stolon", addrs, config)
+		store, err := valkeyrie.NewStore(ctx, etcdv2.StoreName, addrs, config)
 		if err != nil {
 			return nil, err
 		}
@@ -192,7 +194,7 @@ func NewKVStore(cfg Config) (KVStore, error) {
 			ConnectionTimeout: cfg.Timeout,
 		}
 
-		store, err := valkeyrie.NewStore(ctx, "stolon", addrs, config)
+		store, err := valkeyrie.NewStore(ctx, etcdv3.StoreName, addrs, config)
 		if err != nil {
 			return nil, err
 		}
