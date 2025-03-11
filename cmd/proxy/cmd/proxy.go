@@ -129,7 +129,7 @@ func (c *ClusterChecker) startPollonProxy() error {
 	log.Infow("Starting proxying")
 	addr, err := net.ResolveTCPAddr("tcp", net.JoinHostPort(cfg.listenAddress, cfg.port))
 	if err != nil {
-		return fmt.Errorf("error resolving tcp addr %q: %v", addr.String(), err)
+		return fmt.Errorf("error resolving tcp addr %s:%s -> %v", cfg.listenAddress, cfg.port, err)
 	}
 
 	listener, err := net.ListenTCP("tcp", addr)
@@ -163,7 +163,7 @@ func (c *ClusterChecker) stopPollonProxy() {
 		log.Infow("Stopping listening")
 		c.pp.Stop()
 		c.pp = nil
-		c.listener.Close()
+		_ = c.listener.Close()
 		c.listener = nil
 	}
 }
@@ -176,7 +176,7 @@ func (c *ClusterChecker) sendPollonConfData(confData pollon.ConfData) {
 	}
 }
 
-func (c *ClusterChecker) SetProxyInfo(e store.Store, generation int64, proxyTimeout time.Duration) error {
+func (c *ClusterChecker) SetProxyInfo(_ store.Store, generation int64, proxyTimeout time.Duration) error {
 	proxyInfo := &cluster.ProxyInfo{
 		InfoUID:      common.UID(),
 		UID:          c.uid,
@@ -382,7 +382,7 @@ func Execute() {
 	}
 }
 
-func proxy(c *cobra.Command, args []string) {
+func proxy(c *cobra.Command, _ []string) {
 	switch cfg.LogLevel {
 	case "error":
 		slog.SetLevel(zap.ErrorLevel)
@@ -435,7 +435,7 @@ func proxy(c *cobra.Command, args []string) {
 		go func() {
 			err := http.ListenAndServe(cfg.MetricsListenAddress, nil)
 			if err != nil {
-				log.Fatalf("metrics http server error", zap.Error(err))
+				log.Fatalf("metrics http server error: %s", err.Error())
 			}
 		}()
 	}
