@@ -48,7 +48,7 @@ spec:
             - name: STKEEPER_STORE_BACKEND
               value: "consul"
             - name: STKEEPER_STORE_ENDPOINTS
-              value: "http://consul-server.consul.svc:8500"
+              value: "http://consul-server.stolon.svc:8500"
             - name: STKEEPER_PG_REPL_USERNAME
               value: "repluser"
               # Or use a password file like in the below supersuser password

@@ -38,7 +38,7 @@ spec:
             - name: STPROXY_STORE_BACKEND
               value: "consul"
             - name: STPROXY_STORE_ENDPOINTS
-              value: "http://consul-server.consul.svc:8500"
+              value: "http://consul-server.stolon.svc:8500"
             - name: STPROXY_LISTEN_ADDRESS
               value: "0.0.0.0"
             - name: STPROXY_METRICS_LISTEN_ADDRESS

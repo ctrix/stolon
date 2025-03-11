@@ -229,4 +229,61 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 10Gi
+            storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consul-server
+  namespace: stolon
+  labels:
+    app: consul
+    chart: consul-helm
+    heritage: Helm
+    release: consul
+    component: server
+  annotations:
+spec:
+  clusterIP: None
+  # We want the servers to become available even if they're not ready
+  # since this DNS is also used for join operations.
+  publishNotReadyAddresses: true
+  ports:
+    - name: http
+      port: 8500
+      targetPort: 8500
+    - name: grpc
+      port: 8502
+      targetPort: 8502
+    - name: serflan-tcp
+      protocol: "TCP"
+      port: 8301
+      targetPort: 8301
+    - name: serflan-udp
+      protocol: "UDP"
+      port: 8301
+      targetPort: 8301
+    - name: serfwan-tcp
+      protocol: "TCP"
+      port: 8302
+      targetPort: 8302
+    - name: serfwan-udp
+      protocol: "UDP"
+      port: 8302
+      targetPort: 8302
+    - name: server
+      port: 8300
+      targetPort: 8300
+    - name: dns-tcp
+      protocol: "TCP"
+      port: 8600
+      targetPort: dns-tcp
+    - name: dns-udp
+      protocol: "UDP"
+      port: 8600
+      targetPort: dns-udp
+  selector:
+    app: consul
+    release: "consul"
+    component: server
