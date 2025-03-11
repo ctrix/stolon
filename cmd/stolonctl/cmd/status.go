@@ -315,19 +315,19 @@ func generateStatus() (Status, error) {
 	}
 	status.Keepers = keepers
 
-	cluster := ClusterStatus{}
+	scluster := ClusterStatus{}
 	if cd.Cluster == nil || cd.DBs == nil {
-		cluster.Available = false
+		scluster.Available = false
 	} else {
 		master := cd.Cluster.Status.Master
-		cluster.Available = true
+		scluster.Available = true
 
 		if master != "" {
-			cluster.MasterDBUID = cd.DBs[master].UID
-			cluster.MasterKeeperUID = cd.Keepers[cd.DBs[master].Spec.KeeperUID].UID
+			scluster.MasterDBUID = cd.DBs[master].UID
+			scluster.MasterKeeperUID = cd.Keepers[cd.DBs[master].Spec.KeeperUID].UID
 		}
 	}
-	status.Cluster = cluster
+	status.Cluster = scluster
 
 	return status, nil
 }
