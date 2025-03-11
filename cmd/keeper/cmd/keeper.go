@@ -206,7 +206,7 @@ func (p *PostgresKeeper) walLevel(db *cluster.DB) string {
 		"logical", // pg >= 10
 	}
 
-	maj, min, err := p.pgm.BinaryVersion()
+	vmaj, vmin, err := p.pgm.BinaryVersion()
 	if err != nil {
 		// in case we fail to parse the binary version then log it and just use "hot_standby" that works for all versions
 		log.Warnf("failed to get postgres binary version: %v", err)
@@ -215,11 +215,11 @@ func (p *PostgresKeeper) walLevel(db *cluster.DB) string {
 
 	// set default wal_level
 	walLevel := "hot_standby"
-	if maj == 9 {
-		if min >= 6 {
+	if vmaj == 9 {
+		if vmin >= 6 {
 			walLevel = "replica"
 		}
-	} else if maj >= 10 {
+	} else if vmaj >= 10 {
 		walLevel = "replica"
 	}
 
@@ -594,7 +594,7 @@ func (p *PostgresKeeper) updateKeeperInfo() error {
 		return nil
 	}
 
-	maj, min, err := p.pgm.BinaryVersion()
+	vmaj, vmin, err := p.pgm.BinaryVersion()
 	if err != nil {
 		// in case we fail to parse the binary version then log it and just report maj and min as 0
 		log.Warnf("failed to get postgres binary version: %v", err)
@@ -606,8 +606,8 @@ func (p *PostgresKeeper) updateKeeperInfo() error {
 		ClusterUID: clusterUID,
 		BootUUID:   p.bootUUID,
 		PostgresBinaryVersion: cluster.PostgresBinaryVersion{
-			Maj: maj,
-			Min: min,
+			Maj: vmaj,
+			Min: vmin,
 		},
 		PostgresState: p.getLastPGState(),
 
@@ -658,7 +658,7 @@ func (p *PostgresKeeper) updatePGState(pctx context.Context) {
 // If needed, to better handle all the cases with also a better validation of
 // standby names we could use something like the parser used by postgres
 func parseSynchronousStandbyNames(s string) ([]string, error) {
-	var spacesSplit []string = strings.Split(s, " ")
+	var spacesSplit = strings.Split(s, " ")
 	var entries []string
 	if len(spacesSplit) < 2 {
 		// We're parsing format: standby_name [, ...]
@@ -702,7 +702,7 @@ func (p *PostgresKeeper) GetInSyncStandbys() ([]string, error) {
 	return inSyncStandbys, nil
 }
 
-func (p *PostgresKeeper) GetPGState(pctx context.Context) (*cluster.PostgresState, error) {
+func (p *PostgresKeeper) GetPGState(_ context.Context) (*cluster.PostgresState, error) {
 	p.getPGStateMutex.Lock()
 	defer p.getPGStateMutex.Unlock()
 	// Just get one pgstate at a time to avoid exausting available connections
@@ -911,13 +911,13 @@ func (p *PostgresKeeper) resync(db, masterDB, followedDB *cluster.DB, tryPgrewin
 		}
 	}
 
-	maj, min, err := p.pgm.BinaryVersion()
+	vmaj, vmin, err := p.pgm.BinaryVersion()
 	if err != nil {
 		// in case we fail to parse the binary version then log it and just don't use replSlot
 		log.Warnf("failed to get postgres binary version: %v", err)
 	}
 	replSlot := ""
-	if (maj == 9 && min >= 6) || maj > 10 {
+	if (vmaj == 9 && vmin >= 6) || vmaj > 10 {
 		replSlot = common.StolonName(db.UID)
 	}
 
@@ -1020,7 +1020,7 @@ func (p *PostgresKeeper) updateReplSlots(curReplSlots []string, uid string, foll
 	return nil
 }
 
-func (p *PostgresKeeper) refreshReplicationSlots(cd *cluster.ClusterData, db *cluster.DB) error {
+func (p *PostgresKeeper) refreshReplicationSlots(_ *cluster.ClusterData, db *cluster.DB) error {
 	var currentReplicationSlots []string
 	currentReplicationSlots, err := p.pgm.GetReplicationSlots()
 	if err != nil {
@@ -1911,7 +1911,7 @@ func Execute() {
 	}
 }
 
-func keeper(c *cobra.Command, args []string) {
+func keeper(c *cobra.Command, _ []string) {
 	var (
 		err           error
 		listenAddFlag = "pg-advertise-address"
@@ -2127,7 +2127,7 @@ func keeper(c *cobra.Command, args []string) {
 
 	<-end
 
-	if !cfg.disableDataDirLocking {
-		lockFile.Close()
+	if !cfg.disableDataDirLocking && lockFile != nil {
+		_ = lockFile.Close()
 	}
 }
