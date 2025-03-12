@@ -174,7 +174,7 @@ jobs:
           export STOLONPARAMS="--cluster-name=kube-stolon --store-backend=consul --kube-namespace stolon --store-endpoints=http://consul-server.stolon.svc:8500"
 
           # Wait for consul to be ready
-          $KUBERUN bash -c "apt-get update && apt-get install netcat-traditional && while ! nc -z consul-server.stolon.svc 8500; do sleep 1; done && echo CONNECTED"
+          $KUBERUN bash -c "apt-get -qq update && apt-get -qq install netcat-traditional && while ! nc -z consul-server.stolon.svc 8500; do sleep 1; done && echo CONNECTED"
 
           echo "Initializing Stolon"
 
@@ -184,8 +184,11 @@ jobs:
           OK=false
           COUNT=0
           while [ $COUNT -lt 60 ]; do
-              OUT=$($KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq .cluster.status.phase)
-              if [ "$OUT" == '"normal"' ]; then
+              OUT=$($KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq -r '[ .dbs | to_entries[] | .value.spec.role] | sort | join(",")' )
+
+              echo "Current status: $OUT"
+
+              if [ "$OUT" == 'master,standby' ]; then
                   OK=true
                   break
               fi
