@@ -21,10 +21,10 @@ jobs:
 #      github.event.workflow_run.head_branch =~ 'refs/tags/v[0-9]+\\.[0-9]+\\.[0-9]+$'
 
     strategy:
+      fail-fast: false                 # Ensures all combinations run, even if one fails
       matrix:
         pgversion: [16, 17]              # Tmp while debugging
 #        pgversion: [13, 14, 15, 16, 17]  # List of PostgreSQL versions
-        fail-fast: false                 # Ensures all combinations run, even if one fails
     env:
       PGVERSION: ${{ matrix.pgversion }}  # Set PGVERSION for each job
 
