@@ -1,4 +1,4 @@
-name: Docker
+name: Docker tests
 
 on:
   workflow_dispatch:
@@ -259,7 +259,7 @@ jobs:
           export STOLONPARAMS="--cluster-name=kube-stolon --store-backend=etcdv3 --kube-namespace stolon --store-endpoints=http://etcd.stolon.svc:2379"
 
           # Wait for etcd to be ready
-          $KUBERUN bash -c "apt-get -qq update && apt-get -qq install netcat-traditional && while ! nc -z etcd.stolon.svc 8500; do sleep 1; done && echo CONNECTED"
+          $KUBERUN bash -c "apt-get -qq update && apt-get -qq install netcat-traditional && while ! nc -z etcd.stolon.svc 2379; do sleep 1; done && echo CONNECTED"
 
           echo "Initializing Stolon"
 

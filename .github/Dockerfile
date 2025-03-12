@@ -1,4 +1,5 @@
 ARG PGVERSION=0
+ARG ARCHITECTURE=amd64
 
 #######
 ####### Build the stolon binaries
