@@ -105,8 +105,11 @@ jobs:
           OK=false
           COUNT=0
           while [ $COUNT -lt 60 ]; do
-              OUT=$($KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq .cluster.status.phase)
-              if [ "$OUT" == '"normal"' ]; then
+              OUT=$($KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq -r '[ .dbs | to_entries[] | .value.spec.role] | sort | join(",")' )
+
+              echo "Current status: $OUT"
+
+              if [ "$OUT" == 'master,standby' ]; then
                   OK=true
                   break
               fi
