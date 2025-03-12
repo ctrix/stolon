@@ -181,7 +181,89 @@ jobs:
 
           echo "Initializing Stolon"
 
-          # initialize consul
+          # initialize stolon
+          $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS init -y
+
+          OK=false
+          COUNT=0
+          while [ $COUNT -lt 60 ]; do
+              OUT=$($KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq -r '[ .dbs | to_entries[] | .value.spec.role] | sort | join(",")' )
+
+              echo "Current status: $OUT"
+
+              if [ "$OUT" == 'master,standby' ]; then
+                  OK=true
+                  break
+              fi
+              COUNT=$((COUNT + 1))
+              sleep 1
+          done
+
+          if [ "$OK" != "true" ]; then
+            echo "================================== !!"
+            echo "stolon cluster NOT correctly setup !!"
+            echo "================================== !!"
+
+            # report some debug output
+            kubectl get all -n stolon
+
+            $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS status
+            $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS clusterdata read | jq .
+          else
+            echo "================================="
+            echo "stolon cluster successfully setup"
+            echo "================================="
+
+            $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS status
+          fi
+
+  etcdv3-test:
+    needs: docker
+    runs-on: ubuntu-latest
+    env:
+      IMG: ${{ needs.docker.outputs.img-name }}
+      TAG: ${{ needs.docker.outputs.img-tag }}
+    steps:
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        shell: bash
+        run: |
+          sudo apt-get -y install gettext-base jq sed
+
+          export DEBIAN_FRONTEND=noninteractive
+          export DOCKERIMAGE=${{ env.TAG }}
+          echo "Image is: $DOCKERIMAGE"
+
+          kubectl get nodes -o wide
+          kubectl create ns stolon
+          kubectl config set-context --current --namespace=stolon
+
+          # Only replace variables that we have in our current environment
+          keys=$(env | cut -d '=' -f 1 | sed 's/.*/$&/'); joined_keys=$(echo "$keys" | tr '\n' ','); joined_keys=${joined_keys%,};
+          ENVSUBST_ONLY="'$joined_keys'"
+
+          echo "Replacing vars: ${ENVSUBST_ONLY}"
+
+          for i in `ls -1 .github/manifests/etcdv3/*.yaml` ; do
+            tmp_file=$(mktemp /tmp/tmpfile.XXXXXX);
+            envsubst "${ENVSUBST_ONLY}" < "$i" > "${tmp_file}";
+            kubectl apply -f ${tmp_file}
+          done
+
+          export KUBERUN="kubectl run --quiet -it stolonctl -n stolon --image=$DOCKERIMAGE --restart=Never --rm --"
+          export STOLONPARAMS="--cluster-name=kube-stolon --store-backend=etcdv3 --kube-namespace stolon --store-endpoints=http://etcd.stolon.svc:2379"
+
+          # Wait for etcd to be ready
+          $KUBERUN bash -c "apt-get -qq update && apt-get -qq install netcat-traditional && while ! nc -z etcd.stolon.svc 8500; do sleep 1; done && echo CONNECTED"
+
+          echo "Initializing Stolon"
+
+          # initialize stolon
           $KUBERUN /usr/local/bin/stolonctl $STOLONPARAMS init -y
 
           OK=false
